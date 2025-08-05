@@ -11,12 +11,52 @@ screen = pygame.display.set_mode((screenWidth, screenHeight))
 clock = pygame.time.Clock()
 running = True
 
-# init player bar
-playerWidth = 20
-playerHeight = 100
+# bar class
+class Bar:
 
-playerXpos = 0
-playerYpos = (screenHeight - playerHeight) / 2
+    def __init__(self, width, height, maxSpeed):
+        self.width = width
+        self.height = height
+        self.xPos = 0
+        self.yPos = (screenHeight - self.height) / 2
+        self.maxSpeed = maxSpeed
+
+    def setxPos(self, value):
+        self.xPos = value
+
+    def setyPos(self, value):
+        self.yPos = value
+
+    def render(self):
+        pygame.draw.rect(screen, "white", ((self.xPos, self.yPos), (self.width, self.height)))
+
+# player bar
+playerBar = Bar(20, 100, 5)
+enemyBar = Bar(20, 100, 5)
+enemyBar.setxPos(screenWidth - enemyBar.width)
+
+# ball class
+class Ball:
+
+    def __init__(self, radius=float, speed=float):
+        self.radius = radius
+        self.xPos = 0
+        self.yPos = 0
+        self.speed = speed
+
+    def setxPos(self, value=float):
+        self.xPos = value
+
+    def setyPos(self, value=float):
+        self.yPos = value
+
+    def render(self):
+        pygame.draw.circle(screen, "white", (self.xPos, self.yPos), self.radius)
+
+# ball
+ball = Ball(5, 2)
+ball.setxPos(screenWidth / 2)
+ball.setyPos(screenHeight / 2)
 
 # game loop
 while running:
@@ -25,19 +65,27 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
+    # Make the canvas "blank" again
     screen.fill("black")
 
-    mouseXpos, mouseYpos = pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1]
-    playerYpos = mouseYpos - playerHeight / 2
+    # Update player coordinates
+    mousePos = pygame.mouse.get_pos()
+    
+    newXpos = 0
+    playerBar.setxPos(newXpos)
+    
+    newYpos = mousePos[1] - playerBar.height / 2
+    playerBar.setyPos(newYpos)
 
-    # check player pos relative to screen size
-    if playerYpos < 0:
-        playerYpos = 0
-    elif playerYpos + playerHeight > screenHeight:
-        playerYpos = screenHeight - playerHeight 
+    # Border collisions
+    if playerBar.yPos < 0:
+        playerBar.setyPos(0)
+    elif playerBar.yPos + playerBar.height > screenHeight:
+        playerBar.setyPos(screenHeight - playerBar.height)  
 
-    pygame.draw.rect(screen, "white", ((playerXpos, playerYpos), (playerWidth, playerHeight)))
-
+    playerBar.render()
+    enemyBar.render()
+    ball.render()
     pygame.display.flip()
 
     clock.tick(60)
